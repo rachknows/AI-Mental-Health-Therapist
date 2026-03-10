@@ -22,6 +22,16 @@ Rather than relying on a single model, the system uses a **multi-model architect
 
 ---
 
+# 📸 Demo
+
+### Chat Interface
+
+![Chat UI](demo/chat_ui.png)
+
+### Therapist Search Tool
+
+![Therapist Search](demo/therapist_search.png)
+
 # 🏗️ System Architecture
 
 The application follows a modular architecture designed for AI agent experimentation and real-world integrations.
@@ -285,3 +295,4 @@ MIT License
 # 👨‍💻 Author
 
 Created as an exploration of **AI agents, multi-model orchestration, and real-world AI applications** using modern LLM tooling.
+
