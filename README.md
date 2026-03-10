@@ -26,11 +26,11 @@ Rather than relying on a single model, the system uses a **multi-model architect
 
 ### Chat Interface
 
-![Chat UI](demo/chat_ui.png)
+![Chat UI](chat_ui.png)
 
 ### Therapist Search Tool
 
-![Therapist Search](demo/therapist_search.png)
+![Therapist Search](therapist_finder.png)
 
 # 🏗️ System Architecture
 
@@ -295,4 +295,5 @@ MIT License
 # 👨‍💻 Author
 
 Created as an exploration of **AI agents, multi-model orchestration, and real-world AI applications** using modern LLM tooling.
+
 
