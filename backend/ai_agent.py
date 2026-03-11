@@ -1,4 +1,3 @@
-# Step 1: Imports
 from langchain.tools import tool
 from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 from langgraph.prebuilt import create_react_agent
@@ -10,7 +9,7 @@ from backend.tools import (
 )
 
 
-# Step 2: Define Tools
+# --- Tools ---
 
 @tool
 def ask_mental_health_specialist(query: str) -> str:
@@ -30,7 +29,6 @@ def detect_user_location() -> str:
     return get_user_location()
 
 
-# Step 3: Register Tools
 tools = [
     ask_mental_health_specialist,
     locate_therapists,
@@ -38,7 +36,8 @@ tools = [
 ]
 
 
-# Step 4: Setup HuggingFace LLM
+# --- LLM Setup ---
+
 hf_llm = HuggingFaceEndpoint(
     repo_id="openai/gpt-oss-20b",
     huggingfacehub_api_token=HF_API_KEY,
@@ -50,7 +49,8 @@ hf_llm = HuggingFaceEndpoint(
 llm = ChatHuggingFace(llm=hf_llm)
 
 
-# Step 5: System Prompt
+# --- System Prompt ---
+
 SYSTEM_PROMPT = """
 You are a compassionate AI assistant supporting mental health conversations.
 
@@ -69,61 +69,66 @@ If the user says 'near me':
 1. Call detect_user_location
 2. Then call locate_therapists using the detected location.
 
+You have access to the full conversation history. Use it to:
+- Remember what the user has already shared
+- Avoid asking for information already given
+- Build on previous exchanges with continuity and warmth
+
 Always respond with warmth and empathy.
 """
 
 
-# Step 6: Create Agent
+# --- Agent ---
+
 graph = create_react_agent(llm, tools=tools)
 
 
-# Step 7: Parse Response
-def parse_response(stream):
+# --- Response Parser ---
 
-    tool_called_name = "None"
+def parse_response(stream):
+    """
+    Parses the LangGraph stream.
+    - Collects ALL tool names called (not just the last one)
+    - Returns the final AI message content
+    """
+    tools_called = []
     final_response = None
 
     for s in stream:
 
+        # Capture tool calls
         tool_data = s.get("tools")
         if tool_data:
-            tool_messages = tool_data.get("messages")
+            for msg in tool_data.get("messages", []):
+                name = getattr(msg, "name", None)
+                if name:
+                    tools_called.append(name)
 
-            if tool_messages:
-                for msg in tool_messages:
-                    tool_called_name = getattr(msg, "name", "None")
-
+        # Capture final agent response
         agent_data = s.get("agent")
         if agent_data:
-            messages = agent_data.get("messages")
+            for msg in agent_data.get("messages", []):
+                content = getattr(msg, "content", None)
+                # Only capture actual AI text responses, not tool-use blocks
+                if content and isinstance(content, str):
+                    final_response = content
 
-            if messages:
-                for msg in messages:
-                    content = getattr(msg, "content", None)
-
-                    if content:
-                        final_response = content
-
-    return tool_called_name, final_response
+    tools_summary = ", ".join(tools_called) if tools_called else "None"
+    return tools_summary, final_response
 
 
-# Local Testing
+# --- Local Testing ---
+
 if __name__ == "__main__":
-
     while True:
-
         user_input = input("User: ")
-
         inputs = {
             "messages": [
                 ("system", SYSTEM_PROMPT),
                 ("user", user_input)
             ]
         }
-
         stream = graph.stream(inputs, stream_mode="updates")
-
         tool_called_name, final_response = parse_response(stream)
-
-        print("TOOL CALLED:", tool_called_name)
+        print("TOOLS CALLED:", tool_called_name)
         print("ANSWER:", final_response)

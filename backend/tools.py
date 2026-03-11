@@ -39,7 +39,7 @@ Respond with:
     except Exception:
         return "I'm having technical difficulties right now, but I'm here to listen."
 
-# Step 3: DuckDuckGo therapist search
+# Step 2: DuckDuckGo therapist search
 search = DuckDuckGoSearchRun()
 
 
@@ -57,7 +57,7 @@ def search_therapists(location: str) -> str:
     except Exception:
         return "Unable to retrieve therapist information right now."
 
-
+#Step 3: Find NearBy Therapists
 def find_nearby_therapists_by_location(location: str) -> str:
     """
     Wrapper function used by the agent to fetch therapists.
